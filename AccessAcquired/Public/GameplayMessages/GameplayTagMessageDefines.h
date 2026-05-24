@@ -1,0 +1,71 @@
+// Copyright (c) 2026, Oliver Österlund Stare. All rights reserved.
+
+#pragma once
+
+#include "CoreMinimal.h"
+
+#include "GameplayTagContainer.h"
+#include "NativeGameplayTags.h"
+
+/*
+* Contains all defines necessary for the GameplayMessageSystem. Should only contain GameplayTags unique to it. 
+* For any other non-GameplayMessage tags, use GameplayTagDefines.h.
+* 
+* Note: All Channels expect FAAVerbMessage to be the used message type unless stated otherwise.
+*/
+
+// --- Channels
+
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Channels);
+
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Channels_Combat);
+
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Channels_Combat_Enemy);
+
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Channels_Combat_Player);
+
+// Expects FAADamageEventMessage
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Channels_Combat_DamageEvents);
+
+// Expects FAARewardMessage
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Channels_Combat_Rewards);
+
+// Expects FAAVerbMessage
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Channels_GameplayEvents);
+
+// Expects FAATutorialButtonPromptMessage
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Channels_GameplayEvents_Tutorial);
+
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Channels_GameplayEvents_Player);
+
+
+// --- Verbs
+
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Verbs);
+
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Verbs_EnteredCombat);
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Verbs_ExitedCombat);
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Verbs_AggroedOn);
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Verbs_Spawned);
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Verbs_StopTargetLock);
+
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Verbs_ActivatedAction);
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Verbs_ActivatedAction_LightAttack);
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Verbs_ActivatedAction_HeavyAttack);
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Verbs_ActivatedAction_ChargedHeavyAttack);
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Verbs_ActivatedAction_ModeSwitch);
+
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Verbs_ActivatedAction_ModeSwitch_Normal);
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Verbs_ActivatedAction_ModeSwitch_Infrared);
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Verbs_ActivatedAction_ModeSwitch_Ultraviolet);
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Verbs_ActivatedAction_ModeSwitch_Gamma);
+
+
+// --- Contexts
+// These are also used elsewhere as general context tags, and are not restricted to just messages.
+
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Contexts);
+
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Contexts_Global);
+
+VERTICALSLICE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(GAMEPLAYTAG_Contexts_Source);
