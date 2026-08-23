@@ -49,6 +49,8 @@ protected:
 
 	float ElapsedOnScreenTime = 0.0f;
 
+	bool bIsConfirming = false;
+
 public:
 	// --- Delegates;
 	UPROPERTY(BlueprintAssignable, Category = "ConfirmationMenu")

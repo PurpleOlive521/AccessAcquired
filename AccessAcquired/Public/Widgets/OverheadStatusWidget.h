@@ -38,8 +38,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UnbindFromOwner();
 
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "On Leveled Up"))
-	void K2_OnLeveledUp(int PreviousLevel, int CurrentLevel, float NextLevelExp);
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "On Level Changed"))
+	void K2_OnLevelChanged(int32 NewLevel);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "On Health Changed"))
 	void K2_OnHealthChanged(EAttributeType Attribute);

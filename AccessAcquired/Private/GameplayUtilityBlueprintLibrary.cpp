@@ -402,6 +402,12 @@ bool UGameplayUtilityBlueprintLibrary::IsVeryCloseToFloor(UCharacterMovementComp
 				return true;
 			}
 		}
+
+		if (MovementComp->IsWalking())
+		{
+			return true;
+		}
+		
 	}
 
 	return false;

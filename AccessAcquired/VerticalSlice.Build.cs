@@ -27,6 +27,8 @@ public class VerticalSlice : ModuleRules
 			"EnhancedInput",
 			"GameplaySystem",
 			"GameplayTasks",
+            "NavigationSystem"
+
             });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "FMODStudio", "Slate", "SlateCore", "GameplayMessageRuntime" });

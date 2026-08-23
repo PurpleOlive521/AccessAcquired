@@ -10,6 +10,11 @@ bool UFocusWalkDirectionCameraModifier::ProcessViewRotation(AActor* ViewTarget, 
 {
 	Super::ProcessViewRotation(ViewTarget, DeltaTime, OutViewRotation, OutDeltaRot);
 
+	if (not ViewTarget)
+	{
+		return false;
+	}
+
 	const FVector CameraForward = CameraOwner->GetActorForwardVector();
 	const FVector ViewTargetForward = ViewTarget->GetActorForwardVector();
 

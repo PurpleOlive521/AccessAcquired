@@ -2,25 +2,24 @@
 
 
 #include "ProjectileBase.h"
-#include "Components/SphereComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "DamageCalculation.h"
 #include "GameplaySystemComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "GameplayUtilityBlueprintLibrary.h"
 
 AProjectileBase::AProjectileBase(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	Collider = ObjectInitializer.CreateDefaultSubobject<USphereComponent>(this, TEXT("Collider"));
-	SetRootComponent(Collider);
+	CustomRoot = ObjectInitializer.CreateDefaultSubobject<USceneComponent>(this, TEXT("Custom Root"));
+	CustomRoot->SetMobility(EComponentMobility::Movable);
+	SetRootComponent(CustomRoot);
 
-	ProjectileMovement = ObjectInitializer.CreateDefaultSubobject<UAAProjectileMovementComponent>(this, TEXT("ProjectileMovement"));
-
-	ProjectileMovement->OnProjectileStop.AddUniqueDynamic(this, &AProjectileBase::OnHitObject);
-	ProjectileMovement->Velocity =		FVector{ -1.0f, 0.0f, 0.0f };
-	ProjectileMovement->InitialSpeed =	2500.0f;
-	ProjectileMovement->MaxSpeed =		2500.0f;
+	Collider = ObjectInitializer.CreateDefaultSubobject<UCapsuleComponent>(this, TEXT("CapsuleCollider"));
+	Collider->SetMobility(EComponentMobility::Movable);
+	Collider->SetupAttachment(CustomRoot);
 }
 
 void AProjectileBase::BeginPlay()
@@ -45,41 +44,48 @@ void AProjectileBase::InitializeProjectile(AActor* InInstigator, const FRotator&
 		}
 	}
 
-	ProjectileMovement->SetInstigator(InInstigator);
 
-	ProjectileMovement->Velocity = Direction.Vector() * ProjectileMovement->InitialSpeed;
+	TArray<FHitResult> HitResults;
+	Collider->OnComponentBeginOverlap.AddUniqueDynamic(this, &AProjectileBase::OnHitObject);
 
-	GetWorldTimerManager().SetTimer(LifetimeHandle, this, &AProjectileBase::OnExpired, MaxLifetime);
+	FComponentQueryParams QueryParams = {};
+	const FVector SweepLocation = Collider->GetComponentLocation();
+	GetWorld()->ComponentSweepMulti(HitResults, Collider, SweepLocation, SweepLocation, Collider->GetComponentRotation(), QueryParams);
+
+	for (const auto& Hit : HitResults)
+	{
+		OnHitObject(Collider, Hit.GetActor(), Hit.GetComponent(), 0, true, Hit);
+	}
 
 	K2_InitializeProjectile();
 }
 
-void AProjectileBase::OnHitObject(const FHitResult& Hit)
+void AProjectileBase::OnHitObject(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (AActor* Target = Hit.GetActor())
+	if (OtherActor && OtherActor->Implements<UReceiveDamageEventInterface>())
 	{
+		if (!OtherActor->Implements<UReceiveDamageEventInterface>())
+		{
+			return;
+		}
+
+		if (IReceiveDamageEventInterface::Execute_IsDead(OtherActor))
+		{
+			return;
+		}
+
+		const bool bSameTeam = UGameplayUtilityBlueprintLibrary::AreSameTeam_OneEnum(OtherActor, Team);
+		if (bSameTeam)
+		{
+			return;
+		}
+
 		if (const UDamageCalculation* DamageCalculation = UDamageCalculation::GetFromClass(DamageCalculationClass))
 		{
-			DamageCalculation->ApplyCollisionEvent(PendingEvent, Hit, Collider);
-			DamageCalculation->ApplyDamageEvent(Target, PendingEvent);
+			DamageCalculation->ApplyCollisionEvent(PendingEvent, SweepResult, Collider);
+			DamageCalculation->ApplyDamageEvent(OtherActor, PendingEvent);
 		}
 	}
-
-	OnExplode();
-}
-
-void AProjectileBase::OnExpired()
-{
-	OnExplode();
-}
-
-void AProjectileBase::OnExplode()
-{
-	Collider->SetGenerateOverlapEvents(false);
-
-	GetWorldTimerManager().ClearTimer(LifetimeHandle);
-
-	K2_OnExplode();
 }
 
 

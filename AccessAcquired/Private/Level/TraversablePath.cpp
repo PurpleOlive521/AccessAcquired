@@ -206,6 +206,7 @@ void FPathFollowerData::PausePathing()
 	if (UPathFollowingComponent* PathFollowingComp = GetPathFollowingComponent())
 	{
 		PathFollowingComp->OnRequestFinished.RemoveAll(OwnerPath);
+		PathFollowingComp->PauseMove(CurrentMovement, EPathFollowingVelocityMode::Reset);
 	}
 
 	MoveDelay = 0.0f;

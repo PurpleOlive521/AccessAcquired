@@ -8,7 +8,7 @@
 
 /**
  * Settings for the custom loading screen.
- * Allows us to pass parameters and values to the Subsystem from the Editor, since Subsystems can't be subclassed in Blueprint.
+ * Allows changing of the loading screen widget, QOL settings and timing properties for designers.
  */
 UCLASS(Config = Game, defaultconfig, meta = (DisplayName = "Loading Screen Settings"))
 class VERTICALSLICE_API ULoadingScreenSettings : public UDeveloperSettings
@@ -28,6 +28,10 @@ public:
 	// How many additional seconds to keep the loading screen up after loading is finished.
 	UPROPERTY(Config, EditAnywhere, meta = (ForceUnits = s))
 	float HoldLoadingScreenAdditionalSecs = 2.0f;
+
+	// The amount of time before HoldLoadingScreenAdditionalSecs elapses where we should trigger a transition out for the loading screen widget.
+	UPROPERTY(Config, EditAnywhere, meta = (ForceUnits = s))
+	float TransitionOutTime = 1.4f;
 
 	UPROPERTY(Config, EditAnywhere, Category = "Debugging")
 	bool bForceDisplayLoadingScreen = false;

@@ -7,6 +7,7 @@
 #include "GameplayAbility.h"
 #include "GameplayEffect.h"
 #include "GAT_PlayMontageAndWait.h"
+#include "GAT_WaitDelay.h"
 
 #include "GA_ChargedHeavyAttack.generated.h"
 
@@ -91,6 +92,9 @@ protected:
 	TSubclassOf<UDamageEventModifier> DamageModifier = nullptr;
 
 	TArray<FGameplayEffectHandle> ChargeEffectHandles;
+
+	UPROPERTY()
+	TObjectPtr<UGAT_WaitDelay> LatestWaitDelayTask = nullptr;
 
 private:
 

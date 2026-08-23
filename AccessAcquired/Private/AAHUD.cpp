@@ -33,9 +33,12 @@ AAAHUD* AAAHUD::Get(const UObject* WorldContext)
 
 UWidgetMenuStack* AAAHUD::GetMenuStack(const UObject* WorldContext)
 {
-	AAAHUD* Hud = Get(WorldContext);
+	if (AAAHUD* Hud = Get(WorldContext))
+	{
+		return Hud->GetOrCreateMenuStack(WorldContext);
+	}
 
-	return Hud->GetOrCreateMenuStack(WorldContext);
+	return nullptr;
 }
 
 UWidgetMenuStack* AAAHUD::GetOrCreateMenuStack(const UObject* WorldContext)

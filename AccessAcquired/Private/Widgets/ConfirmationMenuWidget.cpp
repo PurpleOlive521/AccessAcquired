@@ -14,6 +14,8 @@ void UConfirmationMenuWidget::NativeOnActivated()
 
 void UConfirmationMenuWidget::NativeOnDeactivated()
 {
+	UnregisterAllBindings();
+
 	Super::NativeOnDeactivated();
 }
 
@@ -48,6 +50,8 @@ void UConfirmationMenuWidget::AssignContentAsset(UConfirmationMenuAsset* Asset, 
 {
 	ensure(Asset);
 
+	ClearBinds();
+
 	if (Asset)
 	{
 		ContentAsset = Asset;
@@ -59,21 +63,23 @@ void UConfirmationMenuWidget::AssignContentAsset(UConfirmationMenuAsset* Asset, 
 }
 
 void UConfirmationMenuWidget::OnConfirmed()
-{
-	OnConfirmedDelegate.Broadcast();
+{	
+	if (IsActivated())
+	{
+		DeactivateWidget();
 
-	ClearBinds();
-
-	DeactivateWidget();
+		OnConfirmedDelegate.Broadcast();
+	}
 }
 
-void UConfirmationMenuWidget::OnCancelled() 
+void UConfirmationMenuWidget::OnCancelled()
 {
-	OnCancelledDelegate.Broadcast();
+	if (IsActivated())
+	{
+		DeactivateWidget();
 
-	ClearBinds();
-
-	DeactivateWidget();
+		OnCancelledDelegate.Broadcast();
+	}
 }
 
 void UConfirmationMenuWidget::ClearBinds() 

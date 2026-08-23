@@ -55,6 +55,9 @@ public:
 
 	void BindToSpawnpoint(AEnemySpawnpoint* Spawnpoint);
 
+	UFUNCTION()
+	void AccountForLoadedEnemies();
+
 protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ScenarioSpawner")

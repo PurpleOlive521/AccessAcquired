@@ -42,9 +42,12 @@ void USettingsMapper::ApplySetting()
 
 	K2_ApplySettingsOnGame();
 
-	if (UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings())
+	if (bRequiresFullApplySettings)
 	{
-		GameUserSettings->ApplySettings(true /* bCheckForCommandLineOverrides */);
+		if (UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings())
+		{
+			GameUserSettings->ApplySettings(true /* bCheckForCommandLineOverrides */);
+		}
 	}
 }
 

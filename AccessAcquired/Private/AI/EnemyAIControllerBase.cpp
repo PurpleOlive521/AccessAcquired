@@ -187,7 +187,7 @@ UAIStateLayer* AEnemyAIControllerBase::GetFallbackState()
 
 void AEnemyAIControllerBase::SeatPrimary()
 {
-	if (!StateStack.Num())
+	if (StateStack.Num() <= 0)
 	{
 		UAIStateLayer* Fallback = GetFallbackState();
 
@@ -211,6 +211,8 @@ void AEnemyAIControllerBase::SeatPrimary()
 		{
 			PreviousPrimary->OnRemovedFromPrimary();
 		}
+
+		Primary->OnBecomePrimary();
 
 		return;
 	}
@@ -280,15 +282,18 @@ int AEnemyAIControllerBase::ForgetAllTargets()
 	return ForgottenCount;
 }
 
-bool AEnemyAIControllerBase::RegisterTarget(const FAIStimulus& Stimulus, AActor* Target)
+bool AEnemyAIControllerBase::RegisterTarget(const FAIStimulus& Stimulus, AActor* Target, bool& bOutWasNewTarget)
 {
 	ensure(Target);
 
 	// We already know about this target
 	if (KnownTargets.Contains(Target))
 	{
+		bOutWasNewTarget = false;
 		return true;
 	}
+
+	bOutWasNewTarget = true;
 
 	const bool bAreSameTeam = UGameplayUtilityBlueprintLibrary::AreSameTeam(GetPawn(), Target);
 	if (bAreSameTeam)
@@ -414,12 +419,16 @@ void AEnemyAIControllerBase::HandleSensedSight(const FAIStimulus& Stimulus, AAct
 {
 	ensure(Actor);
 
-	RegisterTarget(Stimulus, Actor);
+	bool bWasNewTarget = false;
+	const bool bWasValidTarget = RegisterTarget(Stimulus, Actor, bWasNewTarget);
 
-	const EAIState State = GetCurrentState();
-	if (State == EAIState::AS_Passive)
+	if (bWasValidTarget && bWasNewTarget)
 	{
-		PushState<UAIStateLayer_Attacking>();
+		const EAIState State = GetCurrentState();
+		if (State == EAIState::AS_Passive)
+		{
+			PushState<UAIStateLayer_Attacking>();
+		}
 	}
 }
 

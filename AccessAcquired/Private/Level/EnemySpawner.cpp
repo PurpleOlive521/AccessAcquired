@@ -94,7 +94,7 @@ void AEnemySpawner::SpawnLoadedEnemies()
 			
 			if (GameplaySystem)
 			{
-				GameplaySystem->SetEntityLevel(EnemyTypeContainer.EnemyLevel, false);
+				GameplaySystem->SetEntityLevel(EnemyTypeContainer.EnemyLevel);
 			}
 
 			NewlySpawnedEnemies.Add(SpawnedActor);

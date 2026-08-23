@@ -38,11 +38,14 @@ bool UGA_MeleeAttack::CheckAbilityRequirements(const FGameplayAbilityActivationD
 	FAIL_ON_FAILED_SUPER(CheckAbilityRequirements(ActivationData));
 
 	// Not allowed to be performed mid-air
-	const FGameplaySystemActorInfo* ActorInfo = GetOwningComponent()->GetActorInfo();
-
-	if (not UGameplayUtilityBlueprintLibrary::IsVeryCloseToFloor(ActorInfo->GetCharacterMovement()))
+	if (not bCanBePerformedInAir)
 	{
-		return false;
+		const FGameplaySystemActorInfo* ActorInfo = GetOwningComponent()->GetActorInfo();
+
+		if (not UGameplayUtilityBlueprintLibrary::IsVeryCloseToFloor(ActorInfo->GetCharacterMovement()))
+		{
+			return false;
+		}
 	}
 
 	return true;

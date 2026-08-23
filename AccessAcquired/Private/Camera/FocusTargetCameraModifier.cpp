@@ -15,6 +15,11 @@ bool UFocusTargetCameraModifier::ProcessViewRotation(AActor* ViewTarget, float D
 
 	if (not Target)
 	{
+		if (not ViewTarget)
+		{
+			return false;
+		}
+
 		// TODO: Either make an interface or quicker getter for it, or atleast make it a static function so we always get TargetLockingComponents the same way.
 		UTargetLockingComponent* TargetLockingComp = ViewTarget->GetComponentByClass<UTargetLockingComponent>();
 		if (not TargetLockingComp)
@@ -26,7 +31,7 @@ bool UFocusTargetCameraModifier::ProcessViewRotation(AActor* ViewTarget, float D
 		if (not Target)
 		{
 			return false;
-		}
+		}		
 	}
 
 	const FVector CameraLocation = CameraOwner->GetCameraLocation();

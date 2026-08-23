@@ -49,7 +49,7 @@ FTutorialPopupWidgetParams::FTutorialPopupWidgetParams(bool bInPauseWhenAdded, b
 {
 }
 
-void UTutorialPopupWidget::AssignContentAsset(UTutorialPopupCollection* Asset)
+void UTutorialPopupWidget::AssignContentAsset(UTutorialPopupCollection* Asset, const FTutorialPopupWidgetParams& InParams)
 {
 	if (Asset)
 	{
@@ -58,6 +58,10 @@ void UTutorialPopupWidget::AssignContentAsset(UTutorialPopupCollection* Asset)
 			ContentAsset = Asset;
 
 			DisplayedContentIndex = 0;
+
+			Params = InParams;
+
+			K2_OnSetParams(Params);
 
 			if (ContentAsset->IsValidIndex(DisplayedContentIndex))
 			{
@@ -69,13 +73,6 @@ void UTutorialPopupWidget::AssignContentAsset(UTutorialPopupCollection* Asset)
 			}
 		}
 	}
-}
-
-void UTutorialPopupWidget::AssignParams(const FTutorialPopupWidgetParams& InParams)
-{
-	Params = InParams;
-
-	K2_OnSetParams(Params);
 }
 
 void UTutorialPopupWidget::RequestNextPage()

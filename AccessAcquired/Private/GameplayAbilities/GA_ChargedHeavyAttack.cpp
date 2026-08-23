@@ -120,7 +120,12 @@ FPlayMontageAndWaitParams UGA_ChargedHeavyAttack::GetPlayMontageParams() const
 
 void UGA_ChargedHeavyAttack::OnChargingFinished(float ChargingProgress)
 {
-	const float FinalProgress = FMath::Clamp(ChargingProgress / MaxRewardedChargingTime, 0.0f, 1.0f);
+	if (LatestWaitDelayTask)
+	{
+		LatestWaitDelayTask->EndTask();
+	}
+
+	const float FinalProgress = FMath::Clamp(ChargingProgress / MaxRewardedChargingTime, 0.3f, 1.0f);
 	const float FinalMultiplier = MaxMultiplier * FinalProgress;
 
 	if(DamageModifier)
@@ -162,15 +167,15 @@ void UGA_ChargedHeavyAttack::WaitForNextBreakpoint()
 
 		const float NextBreakpoint = TrackedChargingBreakpoints[CurrentBreakpoint];
 		const float BreakpointDuration = FMath::Clamp(NextBreakpoint - PreviousBreakpoint, 0.0f, 1.0f) * MaxRewardedChargingTime;
-		UGAT_WaitDelay* Task = UGAT_WaitDelay::WaitDelay(this, BreakpointDuration);
-		Task->OnWaitDelayFinishDelegate.AddUniqueDynamic(this, &UGA_ChargedHeavyAttack::OnChargingBreakpointReached);
+		LatestWaitDelayTask = UGAT_WaitDelay::WaitDelay(this, BreakpointDuration);
+		LatestWaitDelayTask->OnWaitDelayFinishDelegate.AddUniqueDynamic(this, &UGA_ChargedHeavyAttack::OnChargingBreakpointReached);
 
 		// Native activation of GameplayTasks is explicit, and not handled automatically through the custom K2 node.
 		UGameplaySystemComponent* Component = GetOwningComponent();
 		if (Component)
 		{
 			FGameplayResourceSet Resources = FGameplayResourceSet::NoResources();
-			UGameplayTasksComponent::RunGameplayTask(*Component, *Task, 0U, Resources, Resources);
+			UGameplayTasksComponent::RunGameplayTask(*Component, *LatestWaitDelayTask, 0U, Resources, Resources);
 		}
 	}
 }

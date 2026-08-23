@@ -45,4 +45,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GA_MeleeAttack")
 	TObjectPtr<UAnimMontage> AttackAnimation = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GA_MeleeAttack")
+	bool bCanBePerformedInAir = false;
 };

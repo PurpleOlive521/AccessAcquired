@@ -33,6 +33,13 @@ FString UAAExtendedDebugWidget::GetAIControllerGenericDisplayInfo() const
 	if (bValidAIController)
 	{
 		DisplayInfo += TEXT("	AIState: ") + TextTag_Highlight + UGameplayUtilityBlueprintLibrary::ConvertAIStateToDisplayName(BoundAIController->GetCurrentState()) + TextTag_End + ENDL;
+
+		DisplayInfo += TEXT("	State Stack: \n");
+
+		for (const auto& State : BoundAIController->StateStack)
+		{
+			DisplayInfo += TextTag_Highlight + UGameplayUtilityBlueprintLibrary::ConvertAIStateToDisplayName(State->State) + TextTag_End + ENDL;
+		}
 	}
 
 	return DisplayInfo;

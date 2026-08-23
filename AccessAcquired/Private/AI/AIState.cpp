@@ -20,10 +20,11 @@ bool UAIStateLayer::CanBecomePrimary(AEnemyAIControllerBase* InjectedController)
 }
 
 void UAIStateLayer::OnBecomePrimary()
-{
-	UBlackboardComponent* Blackboard = Controller->GetBlackboardComponent();
-
-	Blackboard->SetValueAsEnum(Controller->StateKeyName, (uint8)State);
+{	
+	if (UBlackboardComponent* Blackboard = Controller->GetBlackboardComponent())
+	{
+		Blackboard->SetValueAsEnum(Controller->StateKeyName, (uint8)State);
+	}
 }
 
 void UAIStateLayer::OnRemovedFromPrimary()
@@ -78,7 +79,8 @@ bool UAIStateLayer_Attacking::CanBecomePrimary(AEnemyAIControllerBase* InjectedC
 	AActor* DerefTarget = Target.Get();
 	if (DerefTarget)
 	{
-		const bool bRegistered = InjectedController->RegisterTarget(FAIStimulus(), DerefTarget);
+		bool bIsNewTarget = false;
+		const bool bRegistered = InjectedController->RegisterTarget(FAIStimulus(), DerefTarget, bIsNewTarget);
 
 		return bRegistered;
 	}

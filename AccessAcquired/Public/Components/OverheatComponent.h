@@ -37,7 +37,7 @@ struct FModeState
 constexpr float OVERHEAT_SEVERITY_MILD =		0.25f;
 constexpr float OVERHEAT_SEVERITY_MODERATE =	0.50f;
 constexpr float OVERHEAT_SEVERITY_SEVERE =		0.75f;
-constexpr float OVERHEAT_SEVERITY_CRITICAL =	1.00f;
+constexpr float OVERHEAT_SEVERITY_CRITICAL =	0.90f;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnModeOverheatedSignature, bool, bEntered);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangeSeveritySignature, EOverheatSeverity, Severity);

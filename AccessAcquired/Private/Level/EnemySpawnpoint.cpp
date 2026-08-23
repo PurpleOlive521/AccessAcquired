@@ -65,6 +65,14 @@ void AEnemySpawnpoint::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (UGameplayPersistenceSubsystem* GP = UGameplayPersistenceSubsystem::Get(this))
+	{
+		if (GP->IsGameLoadInProgress())
+		{
+			GP->OnGameLoadedDelegate.AddUniqueDynamic(this, &AEnemySpawnpoint::BindToSpawnedEnemies);
+		}
+	}
+
 	if (bSpawnOnBeginPlay && not bSpawnedOnBeginPlay)
 	{
 		if (not CanSpawnEnemyOnBeginPlay())
@@ -77,7 +85,7 @@ void AEnemySpawnpoint::BeginPlay()
 		}
 
 		PerformSpawnOnBeginPlay();
-	}
+	}	
 }
 
 void AEnemySpawnpoint::Tick(float DeltaTime)
@@ -150,6 +158,22 @@ void AEnemySpawnpoint::UnbindFromAssets()
 	if (ScenarioComponent)
 	{
 		ScenarioComponent->OnAssetChainInvalidatedDelegate.RemoveAll(this);
+	}
+}
+
+void AEnemySpawnpoint::BindToSpawnedEnemy(AEnemyBase* Enemy)
+{
+	Enemy->OnEnemyDeadDelegate.AddUniqueDynamic(this, &AEnemySpawnpoint::OnSpawnedEnemyKilled);
+}
+
+void AEnemySpawnpoint::BindToSpawnedEnemies()
+{
+	for (auto SpawnedEnemy : SpawnedEnemies)
+	{
+		if (AEnemyBase* Enemy = SpawnedEnemy.Get())
+		{
+			BindToSpawnedEnemy(Enemy);
+		}
 	}
 }
 
@@ -292,6 +316,11 @@ bool AEnemySpawnpoint::SpawnEnemy_Internal(UEnemyDataAsset* EnemyToSpawn, int Le
 	AEnemyBase* SpawnedActor = GetWorld()->SpawnActor<AEnemyBase>(EnemyToSpawn->EnemyClass, SpawnLocation, GetActorRotation(), Params);
 	check(SpawnedActor);
 
+	if (not SpawnedActor)
+	{
+		return false;
+	}
+
 	SpawnedEnemies.Add(MakeWeakObjectPtr(SpawnedActor));
 
 	AssignEnemyProperties(SpawnedActor, Level);
@@ -311,10 +340,11 @@ void AEnemySpawnpoint::AssignEnemyProperties(AEnemyBase* SpawnedActor, int Level
 
 		check(GameplaySystem);
 
-		GameplaySystem->SetEntityLevel(Level, false);
+		GameplaySystem->SetEntityLevel(Level);
 	}
 
 	SpawnedActor->SetSpawnpoint(this);
-	SpawnedActor->OnEnemyDeadDelegate.AddUniqueDynamic(this, &AEnemySpawnpoint::OnSpawnedEnemyKilled);
+
+	BindToSpawnedEnemy(SpawnedActor);
 }
 

@@ -22,9 +22,9 @@ constexpr int	INTEL_GAINED_PER_LEVEL = 100;
 constexpr float INTEL_RANDOMIZE_MIN = 0.8f;
 constexpr float INTEL_RANDOMIZE_MAX = 1.2f;
 
-constexpr float EXPERIENCE_GAINED_PER_LEVEL = 40.0f;
-constexpr float EXPERIENCE_RANDOMIZE_MIN = 0.9f;
-constexpr float EXPERIENCE_RANDOMIZE_MAX = 1.1f;
+constexpr float EXPERIENCE_GAINED_PER_LEVEL = 80.0f;
+constexpr float EXPERIENCE_RANDOMIZE_MIN = 0.95f;
+constexpr float EXPERIENCE_RANDOMIZE_MAX = 1.05f;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyDeadSignature, AEnemyBase*, Enemy);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMeleeAttackSignature);

@@ -22,7 +22,7 @@ void UOverheadStatusWidget::InitializeWithOwner(AActor* InOwner)
 	// Immediately trigger callbacks to sync UI state
 	K2_OnHealthChanged(EAttributeType::EAT_Health);
 	K2_OnChargeChanged(EAttributeType::EAT_Charge);
-	K2_OnLeveledUp(0, OwnerGameplaySystem->GetEntityLevel(), 0.0f);
+	K2_OnLevelChanged(OwnerGameplaySystem->GetEntityLevel());
 }
 
 UGameplaySystemComponent* UOverheadStatusWidget::GetBoundGameplaySystem() const
@@ -43,7 +43,7 @@ void UOverheadStatusWidget::BindToOwner()
 	check(RawGameplaySystem);
 	OwnerGameplaySystem = MakeWeakObjectPtr(RawGameplaySystem);
 
-	RawGameplaySystem->OnLeveledUpDelegate.AddUniqueDynamic(this, &UOverheadStatusWidget::K2_OnLeveledUp);
+	RawGameplaySystem->OnLevelChangedDelegate.AddUniqueDynamic(this, &UOverheadStatusWidget::K2_OnLevelChanged);
 
 	FGameplayTagSystem& TagSystem = RawGameplaySystem->GetGameplayTagSystemAsRef();
 	TagSystem.OnGameplayTagChangedDelegate.AddUObject(this, &UOverheadStatusWidget::ListenForDeathTags);
@@ -61,7 +61,7 @@ void UOverheadStatusWidget::UnbindFromOwner()
 {
 	if (UGameplaySystemComponent* DerefGameplaySystem = OwnerGameplaySystem.Get())
 	{
-		DerefGameplaySystem->OnLeveledUpDelegate.RemoveDynamic(this, &UOverheadStatusWidget::K2_OnLeveledUp);
+		DerefGameplaySystem->OnLevelChangedDelegate.RemoveDynamic(this, &UOverheadStatusWidget::K2_OnLevelChanged);
 
 		FGameplayTagSystem& TagSystem = DerefGameplaySystem->GetGameplayTagSystemAsRef();
 		TagSystem.OnGameplayTagChangedDelegate.RemoveAll(this);

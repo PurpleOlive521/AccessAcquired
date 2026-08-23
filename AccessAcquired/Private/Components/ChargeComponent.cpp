@@ -20,7 +20,7 @@ FAAResolvedDamageEvent UChargeComponent::ResolveDamageEvent(const FAADamageEvent
 	// Setting the default, base behaviour
 	FAAResolvedDamageEvent ResolvedDamageEvent(DamageEvent, GetOwner());
 	ResolvedDamageEvent.EventStates.bWasEventIgnored = false;
-	ResolvedDamageEvent.EventStates.bShouldPlayHitAnimation = true;
+	ResolvedDamageEvent.EventStates.bShouldPlayHitAnimation = false;
 	ResolvedDamageEvent.AppliedKnockback = DamageEvent.Knockback;
 
 	if(IReceiveDamageEventInterface::Execute_IsDead(GetOwner()) == true)

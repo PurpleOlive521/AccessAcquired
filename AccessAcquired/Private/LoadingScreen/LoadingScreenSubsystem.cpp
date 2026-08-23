@@ -8,6 +8,7 @@
 #include "Engine/Engine.h"
 
 #include "LoadingScreenSettings.h"
+#include "LoadingScreenWidget.h"
 
 #include "Framework/Application/SlateApplication.h" // For prompting slate tick
 
@@ -19,15 +20,11 @@
 // USubsystem Begin
 void ULoadingScreenSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
-    FCoreUObjectDelegates::PreLoadMapWithContext.AddUObject(this, &ThisClass::HandlePreLoadMap);
-    FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &ThisClass::HandlePostLoadMap);
+    // Always initialize fully since we could be playing anywhere in the Editor
+#if WITH_EDITOR
+    GameInitialize();
+#endif // WITH_EDITOR
 
-    const UGameInstance* LocalGameInstance = GetGameInstance();
-
-    if (!LocalGameInstance)
-    {
-        UE_LOG(VSLog, Error, TEXT("Could not get GameInstance on Init."));
-    }
 }
 
 void ULoadingScreenSubsystem::Deinitialize()
@@ -85,6 +82,30 @@ bool ULoadingScreenSubsystem::IsTickableWhenPaused() const
 
 //FTickableObject End
 
+void ULoadingScreenSubsystem::GameInitialize()
+{
+    if (HasBeenGameInitialized())
+    {
+        return;
+    }
+
+    bHasBeenGameInitialized = true;
+
+    FCoreUObjectDelegates::PreLoadMapWithContext.AddUObject(this, &ThisClass::HandlePreLoadMap);
+    FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &ThisClass::HandlePostLoadMap);
+
+    const UGameInstance* LocalGameInstance = GetGameInstance();
+
+    if (!LocalGameInstance)
+    {
+        UE_LOG(VSLog, Error, TEXT("Could not get GameInstance on GameInitialize."));
+    }
+}
+
+bool ULoadingScreenSubsystem::HasBeenGameInitialized() const
+{
+    return bHasBeenGameInitialized;
+}
 
 bool ULoadingScreenSubsystem::IsLoadingScreenDisplayed() const
 {
@@ -130,6 +151,20 @@ float ULoadingScreenSubsystem::GetAdditionalTimeRemaining() const
     const double TimeSinceScreenDismissed = CurrentTime - LoadingScreenLastDismissedTimestamp;
 
     return Settings->HoldLoadingScreenAdditionalSecs - TimeSinceScreenDismissed;
+}
+
+void ULoadingScreenSubsystem::BroadcastVisibilityChanged(bool bInVisible)
+{
+    if (bIsWidgetVisible == bInVisible)
+    {
+        return;
+    }
+
+    bIsWidgetVisible = bInVisible;
+
+    ChangePerformanceSettings(/* bEnabingLoadingScreen */ bIsWidgetVisible);
+
+    OnVisibilityChangedDelegate.Broadcast(bInVisible);
 }
 
 void ULoadingScreenSubsystem::HandlePreLoadMap(const FWorldContext& WorldContext, const FString& MapName)
@@ -222,16 +257,17 @@ void ULoadingScreenSubsystem::UpdateLoadingScreen()
 
 bool ULoadingScreenSubsystem::ShouldShowLoadingScreen()
 {
-    bool bNeedToShowLoadingScreen = CheckForDisplayReason();
-
     const ULoadingScreenSettings* Settings = GetDefault<ULoadingScreenSettings>();
 
     // Loading screen can be forced on bc of minimum on-times or other requirements.
     bool bForcedToShowLoadingScreen = false;
+
+    const bool bNeedToShowLoadingScreen = CheckForDisplayReason();
     if (bNeedToShowLoadingScreen)
     {
         // Still need to show it for other reasons, dont update
         LoadingScreenLastDismissedTimestamp = -1.0;
+        bTriggeredTransitionTime = false;
     }
     else
     {
@@ -250,7 +286,31 @@ bool ULoadingScreenSubsystem::ShouldShowLoadingScreen()
             LoadingScreenLastDismissedTimestamp = CurrentTime;
             OnHoldTimeTriggeredDelegate.Broadcast(HoldLoadingScreenTime);
         }
+
         const double TimeSinceScreenDismissed = CurrentTime - LoadingScreenLastDismissedTimestamp;
+
+        if (not bTriggeredTransitionTime)
+        {
+            const double TimeForTransition = Settings->TransitionOutTime;
+            const double TimeLeft = HoldLoadingScreenTime - TimeSinceScreenDismissed;
+
+            // Not enough time left for the transition, skip it
+            if (TimeLeft <= 0.0)
+            {
+                bTriggeredTransitionTime = true;
+            }
+            
+            // Let the widget know that it will soon be removed from the viewport
+            if (TimeLeft <= TimeForTransition)
+            {
+                if (ULoadingScreenWidget* Widget = Cast<ULoadingScreenWidget>(LoadingScreenWidgetInstance.Get()))
+                {
+                    Widget->OnTransitionTimeOutTriggered();
+                }
+
+                bTriggeredTransitionTime = true;
+            }
+        }
 
         // Hold for an extra X seconds, to cover up geometry loading
         if ((HoldLoadingScreenTime > 0.0) && (TimeSinceScreenDismissed < HoldLoadingScreenTime))
@@ -275,9 +335,9 @@ void ULoadingScreenSubsystem::ShowLoadingScreen()
         return;
     }
     
-    bIsDisplayingLoadingScreen = true;
+    // Note: We let the widget itself broadcast OnVisibilityChangedDelegate when it is covering the screen properly, as otherwise transitions won't be covered if the widget animates into view
 
-    OnVisibilityChangedDelegate.Broadcast(bIsDisplayingLoadingScreen);
+    bIsDisplayingLoadingScreen = true;
 
     UGameInstance* LocalGameInstance = GetGameInstance();
 
@@ -288,6 +348,7 @@ void ULoadingScreenSubsystem::ShowLoadingScreen()
     if (UUserWidget* UserWidget = UUserWidget::CreateWidgetInstance(*LocalGameInstance, LoadingScreenWidgetClass, NAME_None))
     {
         LoadingScreenWidget = UserWidget->TakeWidget();
+        LoadingScreenWidgetInstance = MakeWeakObjectPtr(UserWidget);
     }
     else
     {
@@ -299,13 +360,8 @@ void ULoadingScreenSubsystem::ShowLoadingScreen()
     UGameViewportClient* GameViewportClient = LocalGameInstance->GetGameViewportClient();
     GameViewportClient->AddViewportWidgetContent(LoadingScreenWidget.ToSharedRef(), Settings->ZOrder);
 
-    ChangePerformanceSettings(true);
-
-    if (!GIsEditor)
-    {
-        // Tick Slate to make sure the loading screen is displayed immediately
-        FSlateApplication::Get().Tick();
-    }
+    // Tick Slate to make sure the loading screen is displayed immediately
+    FSlateApplication::Get().Tick();
 }
 
 void ULoadingScreenSubsystem::HideLoadingScreen()
@@ -316,11 +372,11 @@ void ULoadingScreenSubsystem::HideLoadingScreen()
         return;
     }
 
-    RemoveWidget();
-
-    ChangePerformanceSettings(false);
-
     bIsDisplayingLoadingScreen = false;
+
+    GEngine->ForceGarbageCollection(true);
+
+    RemoveWidget();
 
     OnVisibilityChangedDelegate.Broadcast(bIsDisplayingLoadingScreen);
 }

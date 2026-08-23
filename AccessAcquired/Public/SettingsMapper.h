@@ -115,6 +115,11 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "SettingsMapper")
 	FSettingsRotatorOptions RotatorOptions;
 
+	// Reapplies all settings when value is changed. 
+	// Is significantly more expensive for slider-based values that are applied immediately, and not required for custom settings.
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "SettingsMapper")
+	bool bRequiresFullApplySettings = true;
+
 	// A confirmation-popup needs to be accepted by the user before setting is applied on the game.
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "SettingsMapper")
 	bool bRequiresUserConfirmation = false;

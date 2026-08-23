@@ -45,6 +45,12 @@ public:
 	virtual bool IsTickableWhenPaused() const override;
 	// --- End FTickableObject Interface
 
+	UFUNCTION(BlueprintCallable)
+	void GameInitialize();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool HasBeenGameInitialized() const;
+
 	// Gets the display state. Returns true if the loading screen is displayed, false if not.
 	UFUNCTION(BlueprintCallable)
 	bool IsLoadingScreenDisplayed() const;
@@ -62,6 +68,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	float GetAdditionalTimeRemaining() const;
 
+	UFUNCTION(BlueprintCallable)
+	void BroadcastVisibilityChanged(bool bInVisible);
 
 private:
 	// CoreUObject hookups
@@ -91,7 +99,11 @@ private:
 	// The displayed widget if any. Used to update the widget manually. Do not confuse with the class that the widget is created from!
 	TSharedPtr<SWidget> LoadingScreenWidget;
 
-	bool bIsDisplayingLoadingScreen;
+	TWeakObjectPtr<UUserWidget> LoadingScreenWidgetInstance = nullptr;
+
+	bool bIsDisplayingLoadingScreen = false;
+
+	bool bIsWidgetVisible = false;
 
 	// The reason for the latest change in the loading screens visibility state. Used for debugging purposes only!
 	FString LoadingScreenStateReason;
@@ -100,8 +112,12 @@ private:
 
 	bool bIsDisplayedByGameLogic = false;
 
+	bool bTriggeredTransitionTime = false;
+
 	// Set by user when calling ForceDisplayStateByGameLogic
 	FString UserSpecifiedLoadingScreenReason;
+
+	bool bHasBeenGameInitialized = false;
 
 public: 
 
@@ -110,6 +126,7 @@ public:
 	FOnHoldTimeTriggeredSignature OnHoldTimeTriggeredDelegate;
 
 	// Called when the loading screens visibility is changed, passing the new state.
+	// Refers to the visibility of the widget itself, does not indicate if the loading screen is added to the viewport or not.
 	UPROPERTY(BlueprintAssignable)
 	FOnVisibilityChangedSignature OnVisibilityChangedDelegate;
 };

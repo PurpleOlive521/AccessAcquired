@@ -30,8 +30,14 @@ void UScenarioSpawnerComponent::BeginPlay()
 			bHasSpawnOnBeginPlaySpawnpoint = true;
 		}
 	}
-	
 
+	if (UGameplayPersistenceSubsystem* GP = UGameplayPersistenceSubsystem::Get(this))
+	{
+		if (GP->IsGameLoadInProgress())
+		{
+			GP->OnGameLoadedDelegate.AddUniqueDynamic(this, &UScenarioSpawnerComponent::AccountForLoadedEnemies);
+		}
+	}
 
 	if (bSpawnOnBeginPlay && not bHasSpawnOnBeginPlaySpawnpoint)
 	{
@@ -42,11 +48,11 @@ void UScenarioSpawnerComponent::BeginPlay()
 				GP->OnGameLoadedDelegate.AddUniqueDynamic(this, &UScenarioSpawnerComponent::SpawnNextEnemyGroup);
 				return;
 			}
-
-			SpawnNextEnemyGroup();
 		}
+
+		SpawnNextEnemyGroup();
+
 	}
-	
 }
 
 void UScenarioSpawnerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -183,23 +189,20 @@ void UScenarioSpawnerComponent::OnSpawnedEnemyKilled(AEnemyBase* Enemy)
 	if (SpawnedEnemies.Contains(Enemy))
 	{
 		EnemiesRemainingBeforeNextWave--;
+		SpawnedEnemies.Remove(Enemy);
 
 		if (bSpawnOncePreviousGroupIsDead && EnemiesRemainingBeforeNextWave <= 0)
 		{
-			if (EnemiesRemainingBeforeNextWave == 0)
-			{
-				OnWaveDefeatedDelegate.Broadcast(this, CurrentGroupIndex - 1);
 
-				if (not HasWave(CurrentGroupIndex))
-				{
-					OnAllWavesDefeatedDelegate.Broadcast(this);
-				}
+			OnWaveDefeatedDelegate.Broadcast(this, CurrentGroupIndex - 1);
+
+			if (not HasWave(CurrentGroupIndex))
+			{
+				OnAllWavesDefeatedDelegate.Broadcast(this);
 			}
 
 			SpawnNextEnemyGroup();
 		}
-
-		SpawnedEnemies.Remove(Enemy);
 	}
 }
 
@@ -216,6 +219,24 @@ void UScenarioSpawnerComponent::BindToSpawnpoint(AEnemySpawnpoint* Spawnpoint)
 {
 	Spawnpoint->OnSpawnedEnemyKilledDelegate.AddUniqueDynamic(this, &UScenarioSpawnerComponent::OnSpawnedEnemyKilled);
 	Spawnpoint->OnEnemySpawnedDelegate.AddUniqueDynamic(this, &UScenarioSpawnerComponent::OnEnemySpawned);
+
+	// Account for race condition by checking if the spawnpoint has already spawned enemies before we bound to it
+	if (AEnemyBase* SpawnedEnemy = Spawnpoint->GetSpawnedEnemy(0))
+	{
+		OnEnemySpawned(Spawnpoint, SpawnedEnemy);
+	}
+}
+
+void UScenarioSpawnerComponent::AccountForLoadedEnemies()
+{
+	// Spawnpoints might have resolved the serialized object ptrs by now,
+	// in which case they will point to a valid, spawned enemy that we need to account for and bind to
+
+	TArray<AEnemySpawnpoint*> Spawnpoints = GetSpawnpoints();
+	for (const auto& Spawnpoint : Spawnpoints)
+	{
+		BindToSpawnpoint(Spawnpoint);
+	}
 }
 
 

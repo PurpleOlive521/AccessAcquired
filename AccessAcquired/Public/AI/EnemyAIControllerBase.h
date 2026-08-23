@@ -102,10 +102,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int ForgetAllTargets();
 
-	// Adds the target to our list of candidates.
-	// Returns true even if the target is already registered.
+	// Adds the target to our list of candidates. 
+	// Returns true even if the target is already registered. bOutWasNewTarget is only relevant if this returns true.
 	UFUNCTION(BlueprintCallable)
-	bool RegisterTarget(const FAIStimulus& Stimulus, AActor* Target);
+	bool RegisterTarget(const FAIStimulus& Stimulus, AActor* Target, bool& bOutWasNewTarget);
 
 	// Returns the highest priority target known to this Controller. Can return nullptr if there are no known targets.
 	UFUNCTION(BlueprintCallable, BlueprintPure)

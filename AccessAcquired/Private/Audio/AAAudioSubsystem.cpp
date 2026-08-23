@@ -87,30 +87,75 @@ FFMODEventInstance UAudioSubsystem::PlayMusic(UFMODEvent* Event, bool bIsForegro
 {
     if (bIsForeground) 
     {
+        // New music requested
         if (Event != ForegroundMusic) 
         {
+            StopMusicTrack(ForegroundMusic, bIsForeground);
+
             ForegroundMusicInstance = PlayEvent2D(Event, true /* bAutoPlay */);
             ForegroundMusic = Event;
             return ToggleMusicLayer(true /* bPlayForeground */);
         }
         else 
         {
-            return ForegroundMusicInstance;
+            if (not UFMODBlueprintStatics::EventInstanceIsValid(ForegroundMusicInstance))
+            {
+                ForegroundMusicInstance = PlayEvent2D(Event, true /* bAutoPlay */);
+            }
+            else
+            {
+                UFMODBlueprintStatics::EventInstanceSetPaused(ForegroundMusicInstance, false /* bPaused */);
+            }
+
+            return ToggleMusicLayer(true /* bPlayForeground */);
         }
     }
 
     if (Event != BackgroundMusic)
     {
-        UFMODBlueprintStatics::EventInstanceStop(BackgroundMusicInstance, true /* bRelease*/);
-        BackgroundMusicInstance = PlayEvent2D(Event, true /* bAutoPlay */);
+        if (not bIsPlayingForeground)
+        {
+            UFMODBlueprintStatics::EventInstanceStop(BackgroundMusicInstance, true /* bRelease*/);
+            BackgroundMusicInstance = PlayEvent2D(Event, true /* bAutoPlay */);
+        }
+
         BackgroundMusic = Event;
     }
     else
     {
+        if (not bIsPlayingForeground)
+        {
+            UFMODBlueprintStatics::EventInstanceSetPaused(BackgroundMusicInstance, false /* bPaused */);
+        }
+
         return BackgroundMusicInstance;
     }
 
     return FFMODEventInstance();
+}
+
+bool UAudioSubsystem::StopMusicTrack(UFMODEvent* Event, bool bIsForeground)
+{
+    if (bIsForeground)
+    {
+        if (ForegroundMusic == Event)
+        {
+            ForegroundMusic = nullptr;
+            UFMODBlueprintStatics::EventInstanceStop(ForegroundMusicInstance, true /* bRelease*/);
+            return true;
+        }
+    }
+    else
+    {
+        if (BackgroundMusic == Event)
+        {
+            BackgroundMusic = nullptr;
+            UFMODBlueprintStatics::EventInstanceStop(BackgroundMusicInstance, true /* bRelease*/);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 FFMODEventInstance UAudioSubsystem::ToggleMusicLayer(bool bPlayForeground)
@@ -131,14 +176,32 @@ FFMODEventInstance UAudioSubsystem::ToggleMusicLayer(bool bPlayForeground)
 
     if (bIsPlayingForeground) 
     {
+        // Music was assigned but never played. Play it now instead of trying to unpause it
+        if (not UFMODBlueprintStatics::EventInstanceIsValid(ForegroundMusicInstance))
+        {
+            ForegroundMusicInstance = PlayEvent2D(ForegroundMusic, true /* bAutoPlay */);
+        }
+        else
+        {
+            UFMODBlueprintStatics::EventInstanceSetPaused(ForegroundMusicInstance, false /* bPaused */);
+        }
+
         UFMODBlueprintStatics::EventInstanceSetPaused(BackgroundMusicInstance, true /* bPaused */);
-        UFMODBlueprintStatics::EventInstancePlay(ForegroundMusicInstance);
-        BackgroundMusic = nullptr;
+
         return ForegroundMusicInstance;
     }
     else
     {
-        UFMODBlueprintStatics::EventInstanceSetPaused(BackgroundMusicInstance, false /* bPaused */);
+        // Music was assigned but never played. Play it now instead of trying to unpause it
+        if (not UFMODBlueprintStatics::EventInstanceIsValid(BackgroundMusicInstance))
+        {
+            BackgroundMusicInstance = PlayEvent2D(BackgroundMusic, true /* bAutoPlay */);
+        }
+        else
+        {
+            UFMODBlueprintStatics::EventInstanceSetPaused(BackgroundMusicInstance, false /* bPaused */);
+        }
+
         UFMODBlueprintStatics::EventInstanceStop(ForegroundMusicInstance, true /* bRelease */);
     }
 
@@ -199,7 +262,7 @@ void UAudioSubsystem::ReceiveMessage(FGameplayTag Channel, const FAAVerbMessage&
 
     if (Message.Verb == GAMEPLAYTAG_Verbs_ExitedCombat)
     {
-        ToggleMusicLayer();
+        ToggleMusicLayer(false /* bPlayForeground*/);
         return;
     }
 }

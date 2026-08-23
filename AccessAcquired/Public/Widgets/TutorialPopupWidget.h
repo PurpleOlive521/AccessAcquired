@@ -93,10 +93,7 @@ class VERTICALSLICE_API UTutorialPopupWidget : public UExtendedCommonActivatable
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "TutorialPopup")
-	void AssignContentAsset(UTutorialPopupCollection* Asset);
-
-	UFUNCTION(BlueprintCallable, Category = "TutorialPopup")
-	void AssignParams(const FTutorialPopupWidgetParams& InParams = FTutorialPopupWidgetParams());
+	void AssignContentAsset(UTutorialPopupCollection* Asset, const FTutorialPopupWidgetParams& Params);
 
 	// Displays the next content asset in the TutorialPopupCollection.
 	// If we are at the last page, closes the widget.
@@ -110,7 +107,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "On Content Changed"), Category = "TutorialPopup")
 	void K2_OnContentChanged();
 
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "On Receive Params"), Category = "TutorialPopup")
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "On Set Params"), Category = "TutorialPopup")
 	void K2_OnSetParams(const FTutorialPopupWidgetParams& NewParams);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "TutorialPopup")

@@ -94,3 +94,14 @@ void UAAAudioFunctionLibrary::StopMusic(UObject* WorldContext, bool bStopForegro
 
     AudioManager->StopMusic(bStopForeground, bStopBackground);
 }
+
+bool UAAAudioFunctionLibrary::StopMusicTrack(UObject* WorldContext, UFMODEvent* Event, bool bIsForeground)
+{
+    GET_AUDIO_MANAGER(AudioManager);
+    if (not AudioManager)
+    {
+        return false;
+    }
+
+    return AudioManager->StopMusicTrack(Event, bIsForeground);
+}

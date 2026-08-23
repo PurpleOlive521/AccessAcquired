@@ -39,4 +39,7 @@ class VERTICALSLICE_API UAAAudioFunctionLibrary : public UBlueprintFunctionLibra
 
 	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContext", DefaultToSelf = "WorldContext", UnsafeDuringActorConstruction = "true"), Category = "Audio|AA")
 	static void StopMusic(UObject* WorldContext, bool bStopForeground, bool bStopBackground);
+
+	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContext", DefaultToSelf = "WorldContext", UnsafeDuringActorConstruction = "true"), Category = "Audio|AA")
+	static bool StopMusicTrack(UObject* WorldContext, UFMODEvent* Event, bool bIsForeground = false);
 };

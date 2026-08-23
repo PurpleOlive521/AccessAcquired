@@ -124,62 +124,35 @@ void UOverheatComponent::UpdateSeverity(EAttributeType OverheatType)
 
 	const float RelativeOverheat = (Value - OverclockStart) / fabs(100.0f - OverclockThreshold);
 
-	if (RelativeOverheat < OVERHEAT_SEVERITY_MILD)
+	if (RelativeOverheat >= OVERHEAT_SEVERITY_CRITICAL)
 	{
-		SetSeverity(Mode, EOverheatSeverity::EOS_Mild);
+		SetSeverity(Mode, EOverheatSeverity::EOS_Critical);
 		return;
 	}
 
-	if (RelativeOverheat < OVERHEAT_SEVERITY_MODERATE)
-	{
-		SetSeverity(Mode, EOverheatSeverity::EOS_Moderate);
-		return;
-	}
-
-	if (RelativeOverheat < OVERHEAT_SEVERITY_SEVERE)
+	if (RelativeOverheat >= OVERHEAT_SEVERITY_SEVERE)
 	{
 		SetSeverity(Mode, EOverheatSeverity::EOS_Severe);
 		return;
 	}
 
-	if (RelativeOverheat < OVERHEAT_SEVERITY_CRITICAL)
+
+	if (RelativeOverheat >= OVERHEAT_SEVERITY_MODERATE)
 	{
-		SetSeverity(Mode, EOverheatSeverity::EOS_Critical);
+		SetSeverity(Mode, EOverheatSeverity::EOS_Moderate);
+		return;
+	}
+
+	if (RelativeOverheat >= OVERHEAT_SEVERITY_MILD)
+	{
+		SetSeverity(Mode, EOverheatSeverity::EOS_Mild);
 		return;
 	}
 }
 
 void UOverheatComponent::UpdateOverclock(EAttributeType OverheatType)
 {
-	const float Value = GameplaySystem->GetAttributeValue(OverheatType, EAttributeValue::EAV_CurrentValue);
-	const float MaxValue = GameplaySystem->GetAttributeValue(EAttributeType::EAT_OverheatLimit, EAttributeValue::EAV_CurrentValue);
 
-	const float OverclockThreshold = 0.01f * GameplaySystem->GetAttributeValue(EAttributeType::EAT_OverclockThreshold, EAttributeValue::EAV_CurrentValue);
-	const float OverclockStart = MaxValue * OverclockThreshold;
-
-	const EDamageType Mode = UGameplayUtilityBlueprintLibrary::GetCorrespondingMode(OverheatType);
-	FModeState& State = ModeStates.FindChecked(Mode);
-
-	if (Value < OverclockStart)
-	{
-		if (!State.bIsOverclocking)
-		{
-			return;
-		}
-
-		State.bIsOverclocking = false;
-		GameplaySystem->RemoveTag(GAMEPLAYTAG_Status_Overclocking);
-	}
-	else
-	{
-		if (State.bIsOverclocking)
-		{
-			return;
-		}
-
-		State.bIsOverclocking = true;
-		GameplaySystem->AddTag(GAMEPLAYTAG_Status_Overclocking);
-	}
 }
 
 void UOverheatComponent::SetSeverity(EDamageType Mode, EOverheatSeverity NewSeverity)

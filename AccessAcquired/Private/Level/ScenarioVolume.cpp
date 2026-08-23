@@ -127,11 +127,6 @@ void AScenarioVolume::OnConstruction(const FTransform& Transform)
 	UpdateTextRenderer();
 }
 
-void AScenarioVolume::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
 void AScenarioVolume::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	if (EndPlayReason == EEndPlayReason::Destroyed)

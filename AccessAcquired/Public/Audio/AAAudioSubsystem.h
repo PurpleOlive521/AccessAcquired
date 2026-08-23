@@ -49,6 +49,9 @@ public:
 	FFMODEventInstance PlayMusic(UFMODEvent* Event, bool bIsForeground = false);
 
 	UFUNCTION(BlueprintCallable, Category = "AudioSubsystem")
+	bool StopMusicTrack(UFMODEvent* Event, bool bIsForeground = false);
+
+	UFUNCTION(BlueprintCallable, Category = "AudioSubsystem")
 	FFMODEventInstance ToggleMusicLayer(bool bPlayForeground = false);
 
 	UFUNCTION(BlueprintCallable, Category = "AudioSubsystem")

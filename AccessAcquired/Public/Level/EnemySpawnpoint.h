@@ -46,6 +46,11 @@ public:
 
 	void UnbindFromAssets();
 
+	void BindToSpawnedEnemy(AEnemyBase* Enemy);
+
+	UFUNCTION()
+	void BindToSpawnedEnemies();
+
 	// An Asset we depend on has been edited, moved or removed.
 	void OnAssetInvalidated();
 
@@ -56,15 +61,15 @@ public:
 
 	bool WillSpawnEnemyOnBeginPlay() const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "EnemySpawnpoint")
 	bool SpawnEnemy();
 
 	// Overrides any current Enemy parameters and uses the EnemyToInject instead.
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "EnemySpawnpoint")
 	bool SpawnEnemy_Injected(UEnemyDataAsset* EnemyToInject, int Level);
 
 	// Will spawn the Enemy if this is called before the EnemySpawnpoints own BeginPlay
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "EnemySpawnpoint")
 	AEnemyBase* GetSpawnedEnemy(int32 Index = 0);
 
 	int32 GetSpawnedEnemyCount() const;

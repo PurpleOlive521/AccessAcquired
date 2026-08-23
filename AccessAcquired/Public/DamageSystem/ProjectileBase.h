@@ -8,7 +8,7 @@
 #include "DamageEventTypes.h"
 #include "ProjectileBase.generated.h"
 
-class USphereComponent;
+class UCapsuleComponent;
 class UDamageCalculation;
 
 UCLASS()
@@ -28,15 +28,7 @@ public:
 	void K2_InitializeProjectile();
 
 	UFUNCTION()
-	void OnHitObject(const FHitResult& Hit);
-
-	void OnExpired();
-
-	void OnExplode();
-
-	// This Actor must be destroyed as part of this process!
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, meta = (DisplayName = "On Explode"), Category = "ProjectileBase")
-	void K2_OnExplode();
+	void OnHitObject(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 protected:
 
@@ -57,14 +49,14 @@ protected:
 	TSubclassOf<UDamageCalculation> DamageCalculationClass = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "ProjectileBase")
-	TObjectPtr<UAAProjectileMovementComponent> ProjectileMovement = nullptr;
+	TObjectPtr<USceneComponent> CustomRoot = nullptr;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "ProjectileBase")
-	TObjectPtr<USphereComponent> Collider = nullptr;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "ProjectileBase")
+	TObjectPtr<UCapsuleComponent> Collider = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, Category = "ProjectileBase")
 	FAADamageEvent PendingEvent;
+
 	ETeam Team = ETeam::ET_NotAssigned;
 
-	FTimerHandle LifetimeHandle;
 };

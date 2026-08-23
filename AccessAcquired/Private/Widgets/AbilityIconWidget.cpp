@@ -112,6 +112,10 @@ void UAbilityIconWidget::OnModeSwitched(EDamageType Mode)
 	FGameplayTag SlotTag = UGameplayUtilityBlueprintLibrary::GetTagChild(GAMEPLAYTAG_AbilitySlot_Ability, CurrentMode);
 	FGameplayAbilitySlotContainer* AbilitySlots = BoundCharacter.Get()->GetAbilitySlots();
 	TargetSlot = AbilitySlots->GetSlot(SlotTag);
+	if (not TargetSlot)
+	{
+		return;
+	}
 
 	TSubclassOf<UGameplayAbility> StoredAbility = TargetSlot->Ability;
 
@@ -119,7 +123,7 @@ void UAbilityIconWidget::OnModeSwitched(EDamageType Mode)
 	{
 		PlayerDerivedAbility = Cast<UGA_PlayerBase>(TargetSlot->Ability->GetDefaultObject());
 
-		if (!PlayerDerivedAbility)
+		if (not PlayerDerivedAbility)
 		{
 			UE_LOG(VSLog, Warning, TEXT("UAbilityIconWidget::OnModeSwitched: PlayerDerivedAbility is not player derived, can't calculate activation progress."));
 		}
